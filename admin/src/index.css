@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  --color-background: #faf9f6;
+  --color-foreground: #1a1a1a;
+  --color-accent-beige: #f5f0e6;
+  --color-accent-blush: #f8e8e8;
+  --color-accent-rose: #d4a373;
+  --color-luxury-gold: #c5a059;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+  }
+}
+
+@utility btn-luxury {
+  @apply px-8 py-3 bg-black text-white rounded-full transition-all duration-300 hover:bg-neutral-800 hover:scale-[1.02] active:scale-[0.98] text-sm uppercase tracking-widest font-medium;
+}
+
+@utility input-premium {
+  @apply w-full px-4 py-3 bg-white border border-neutral-100 rounded-xl focus:border-luxury-gold focus:ring-1 focus:ring-luxury-gold outline-none transition-all duration-300;
+}
