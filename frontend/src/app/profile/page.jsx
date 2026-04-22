@@ -23,6 +23,13 @@ import {
 import Link from 'next/link';
 import { useStore } from '@/context/StoreContext';
 
+const formatAddress = (addr) => {
+   if (!addr) return "No address provided";
+   if (typeof addr === 'string') return addr;
+   const { street, area, city, state, pincode, country } = addr;
+   return [street, area, city, state, pincode, country].filter(Boolean).join(', ');
+};
+
 const ProfilePage = () => {
    const { user, setUser, isLoggedIn, logout, isInitialized } = useStore();
    const router = useRouter();
@@ -61,32 +68,67 @@ const ProfilePage = () => {
       setIsEditing(false);
    };
 
-   const handleSave = () => {
-      setUser(tempUser);
-      setIsEditing(false);
+   const handleSave = async () => {
+      try {
+         const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api';
+         const token = localStorage.getItem('aria_token');
+
+         const response = await fetch(`${baseUrl}/users/profile`, {
+            method: 'PUT',
+            headers: {
+               'Content-Type': 'application/json',
+               'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(tempUser),
+         });
+
+         const data = await response.json();
+
+         if (!response.ok) {
+            throw new Error(data.message || "Failed to update profile");
+         }
+
+         setUser(data.user);
+         localStorage.setItem('aria_user', JSON.stringify(data.user));
+         setIsEditing(false);
+      } catch (err) {
+         console.error(err);
+         alert(err.message);
+      }
    };
 
    const handleInputChange = (e) => {
       const { name, value } = e.target;
-      setTempUser(prev => ({ ...prev, [name]: value }));
+      if (name.includes('.')) {
+         const [parent, child] = name.split('.');
+         setTempUser(prev => ({
+            ...prev,
+            [parent]: {
+               ...prev[parent],
+               [child]: value
+            }
+         }));
+      } else {
+         setTempUser(prev => ({ ...prev, [name]: value }));
+      }
    };
 
    const recentOrders = [
-      { 
-         id: '#ORD-7721', 
-         date: 'March 24, 2024', 
-         total: '₹4,599.00', 
-         status: 'Delivered', 
+      {
+         id: '#ORD-7721',
+         date: 'March 24, 2024',
+         total: '₹4,599.00',
+         status: 'Delivered',
          items: 2,
          productName: 'Silk Wrap Evening Gown',
          productImage: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?q=80&w=800&auto=format&fit=crop',
          paymentStatus: 'Paid'
       },
-      { 
-         id: '#ORD-6691', 
-         date: 'February 12, 2024', 
-         total: '₹12,450.00', 
-         status: 'Shipped', 
+      {
+         id: '#ORD-6691',
+         date: 'February 12, 2024',
+         total: '₹12,450.00',
+         status: 'Shipped',
          items: 3,
          productName: 'Oversized Woolen Blazer',
          productImage: 'https://plus.unsplash.com/premium_photo-1674719144570-0728faf14f96?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8b3ZlcmNvYXR8ZW58MHx8MHx8fDA%3D',
@@ -206,13 +248,13 @@ const ProfilePage = () => {
                                     <User size={18} className="text-accent-rose" />
                                     {isEditing ? (
                                        <input
-                                          name="name"
-                                          value={tempUser.name}
+                                          name="fullname"
+                                          value={tempUser.fullname}
                                           onChange={handleInputChange}
                                           className="bg-transparent border-none outline-none w-full text-neutral-800 font-medium"
                                        />
                                     ) : (
-                                       <span className="text-neutral-800 font-medium">{user.name}</span>
+                                       <span className="text-neutral-800 font-medium">{user.fullname}</span>
                                     )}
                                  </div>
                               </div>
@@ -238,13 +280,13 @@ const ProfilePage = () => {
                                     <Phone size={18} className="text-accent-rose" />
                                     {isEditing ? (
                                        <input
-                                          name="phone"
-                                          value={tempUser.phone}
+                                          name="phoneNumber"
+                                          value={tempUser.phoneNumber}
                                           onChange={handleInputChange}
                                           className="bg-transparent border-none outline-none w-full text-neutral-800 font-medium"
                                        />
                                     ) : (
-                                       <span className="text-neutral-800 font-medium">{user.phone}</span>
+                                       <span className="text-neutral-800 font-medium">{user.phoneNumber}</span>
                                     )}
                                  </div>
                               </div>
@@ -253,15 +295,54 @@ const ProfilePage = () => {
                                  <div className="flex items-start gap-4 p-5 bg-[#faf9f6] rounded-2xl border border-neutral-50 focus-within:border-neutral-800 transition-all">
                                     <MapPin size={18} className="text-accent-rose mt-1 shrink-0" />
                                     {isEditing ? (
-                                       <textarea
-                                          name="address"
-                                          value={tempUser.address}
-                                          onChange={handleInputChange}
-                                          className="bg-transparent border-none outline-none w-full text-neutral-800 font-medium resize-none"
-                                          rows={2}
-                                       />
+                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                                          <input
+                                             name="address.street"
+                                             placeholder="Street"
+                                             value={tempUser.address?.street || ''}
+                                             onChange={handleInputChange}
+                                             className="bg-transparent border-b border-neutral-200 outline-none w-full text-neutral-800 font-medium py-1"
+                                          />
+                                          <input
+                                             name="address.area"
+                                             placeholder="Area"
+                                             value={tempUser.address?.area || ''}
+                                             onChange={handleInputChange}
+                                             className="bg-transparent border-b border-neutral-200 outline-none w-full text-neutral-800 font-medium py-1"
+                                          />
+                                          <input
+                                             name="address.city"
+                                             placeholder="City"
+                                             value={tempUser.address?.city || ''}
+                                             onChange={handleInputChange}
+                                             className="bg-transparent border-b border-neutral-200 outline-none w-full text-neutral-800 font-medium py-1"
+                                          />
+                                          <input
+                                             name="address.state"
+                                             placeholder="State"
+                                             value={tempUser.address?.state || ''}
+                                             onChange={handleInputChange}
+                                             className="bg-transparent border-b border-neutral-200 outline-none w-full text-neutral-800 font-medium py-1"
+                                          />
+                                          <input
+                                             name="address.pincode"
+                                             placeholder="Pincode"
+                                             value={tempUser.address?.pincode || ''}
+                                             onChange={handleInputChange}
+                                             className="bg-transparent border-b border-neutral-200 outline-none w-full text-neutral-800 font-medium py-1"
+                                          />
+                                          <input
+                                             name="address.country"
+                                             placeholder="Country"
+                                             value={tempUser.address?.country || ''}
+                                             onChange={handleInputChange}
+                                             className="bg-transparent border-b border-neutral-200 outline-none w-full text-neutral-800 font-medium py-1"
+                                          />
+                                       </div>
                                     ) : (
-                                       <span className="text-neutral-800 font-medium leading-relaxed">{user.address}</span>
+                                       <span className="text-neutral-800 font-medium leading-relaxed">
+                                          {formatAddress(user.address)}
+                                       </span>
                                     )}
                                  </div>
                               </div>
@@ -288,19 +369,18 @@ const ProfilePage = () => {
                                     <div className="flex flex-col md:flex-row items-center gap-8 flex-1">
                                        {/* Product Image */}
                                        <div className="w-24 h-32 md:w-20 md:h-24 rounded-2xl overflow-hidden shadow-sm border border-neutral-50 shrink-0">
-                                          <img 
-                                             src={order.productImage} 
-                                             alt={order.productName} 
-                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                                          <img
+                                             src={order.productImage}
+                                             alt={order.productName}
+                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                           />
                                        </div>
 
                                        <div className="flex-1 space-y-1 text-center md:text-left">
                                           <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                                              <p className="text-base font-bold text-[#1a1a1a] tracking-tight">{order.id}</p>
-                                             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest ${
-                                                order.status === 'Delivered' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
-                                             }`}>
+                                             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest ${order.status === 'Delivered' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
+                                                }`}>
                                                 {order.status}
                                              </span>
                                           </div>
@@ -324,16 +404,16 @@ const ProfilePage = () => {
                                        </div>
 
                                        <div className="flex items-center gap-3 w-full sm:w-auto">
-                                          <Link 
+                                          <Link
                                              href={`/order-summary/${order.id.replace('#', '')}`}
                                              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-xl bg-neutral-50 text-[#1a1a1a] text-xs font-bold uppercase tracking-widest hover:bg-[#1a1a1a] hover:text-white transition-all duration-300"
                                           >
                                              <Eye size={16} />
                                              <span className="hidden xl:inline">Summary</span>
                                           </Link>
-                                          
+
                                           {order.status !== 'Delivered' && (
-                                             <Link 
+                                             <Link
                                                 href={`/track?id=${order.id.replace('#', '')}`}
                                                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-xl bg-[#1a1a1a] text-white text-xs font-bold uppercase tracking-widest hover:bg-accent-rose transition-all duration-300"
                                              >

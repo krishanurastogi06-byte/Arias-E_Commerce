@@ -6,7 +6,6 @@ mongoose.connect(process.env.MONGODB_URL)
     })
     .catch((err) => {
         console.log("Error in connecting to MongoDB", err.message);
-        // console.log("ENV VALUE:", process.env.MONGODB_URL);
     });
 
 module.exports = mongoose.connection;
