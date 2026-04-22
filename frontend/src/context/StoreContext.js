@@ -6,19 +6,13 @@ const StoreContext = createContext();
 export const StoreProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState({
-    name: "Grace Sterling",
-    email: "grace@aria.com",
-    phone: "+91 98765 43210",
-    address: "Skyline Apartments, Penthouse B, Mumbai, MH - 400001",
-    joined: "March 2024"
-  });
+  const [user, setUser] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Load cart and auth from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem('aria_cart');
-    const savedAuth = localStorage.getItem('aria_auth');
+    const savedToken = localStorage.getItem('aria_token');
     const savedUser = localStorage.getItem('aria_user');
     
     if (savedCart) {
@@ -29,8 +23,8 @@ export const StoreProvider = ({ children }) => {
       }
     }
     
-    if (savedAuth) {
-      setIsLoggedIn(savedAuth === 'true');
+    if (savedToken) {
+      setIsLoggedIn(true);
     }
 
     if (savedUser) {
@@ -50,20 +44,6 @@ export const StoreProvider = ({ children }) => {
       localStorage.setItem('aria_cart', JSON.stringify(cart));
     }
   }, [cart, isInitialized]);
-
-  // Save auth to localStorage whenever it changes
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('aria_auth', isLoggedIn.toString());
-    }
-  }, [isLoggedIn, isInitialized]);
-
-  // Save user to localStorage whenever it changes
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('aria_user', JSON.stringify(user));
-    }
-  }, [user, isInitialized]);
 
   const addToCart = (product, quantity = 1) => {
     setCart(prevCart => {
@@ -94,8 +74,19 @@ export const StoreProvider = ({ children }) => {
     setCart([]);
   };
 
-  const login = () => setIsLoggedIn(true);
-  const logout = () => setIsLoggedIn(false);
+  const login = (userData, token) => {
+    setIsLoggedIn(true);
+    setUser(userData);
+    localStorage.setItem('aria_token', token);
+    localStorage.setItem('aria_user', JSON.stringify(userData));
+  };
+
+  const logout = () => {
+    setIsLoggedIn(false);
+    setUser(null);
+    localStorage.removeItem('aria_token');
+    localStorage.removeItem('aria_user');
+  };
 
   return (
     <StoreContext.Provider value={{
