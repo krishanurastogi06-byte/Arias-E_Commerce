@@ -7,6 +7,7 @@ const mongooseConnection = require('./src/config/mongoose.config');
 
 const userRouter = require('./src/routes/userRoutes');
 const productRouter = require('./src/routes/productRoutes');
+const categoryRouter = require('./src/routes/categoryRoutes');
 
 app.use(cors({
     origin: [process.env.FRONTEND_URL, process.env.ADMIN_URL],
@@ -17,9 +18,10 @@ app.use(cookieParser());
 
 app.use('/api/users', userRouter);
 app.use('/api/products', productRouter);
+app.use('/api/category', categoryRouter);
 
 app.get('/', (req, res) => {
-    res.send("hello");
+    res.send("The server is running..");
 });
 
 app.listen(process.env.PORT, () => {

@@ -6,7 +6,7 @@ const CardView = ({ data, onEdit, onDelete, onView, renderContent }) => {
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
       {data.map((item) => (
         <div 
-          key={item.id} 
+          key={item._id || item.id} 
           className="group bg-white rounded-3xl border border-neutral-100 overflow-hidden hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-500"
         >
           {/* Image Container */}

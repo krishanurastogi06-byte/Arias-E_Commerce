@@ -3,7 +3,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import HeroBanner from '@/components/home/HeroBanner';
 import Image from 'next/image';
-import { products, categories as categoryData } from '@/data/data';
 import ProductCard from '@/components/ProductCard';
 import ShopToolbar from '@/components/ShopToolbar';
 import EmptyState from '@/components/EmptyState';
@@ -14,11 +13,42 @@ export default function ShopPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSort, setSelectedSort] = useState('popular');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Sync filters from URL query params (e.g. /shop?category=Dresses or /shop?filter=new)
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const [prodRes, catRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/products`),
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category/all`)
+      ]);
+
+      if (prodRes.ok) {
+        const prodData = await prodRes.json();
+        setProducts(prodData.products || []);
+      }
+
+      if (catRes.ok) {
+        const catData = await catRes.json();
+        setCategories(catData.categories || []);
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Sync filters from URL query params
   useEffect(() => {
     const cat = searchParams.get('category');
     const filter = searchParams.get('filter');
@@ -32,15 +62,14 @@ export default function ShopPage() {
     if (filter === 'new') {
       setSelectedSort('new');
     } else if (!cat) {
-      // Only reset sort if there's no category param either (pure /shop)
       setSelectedSort('popular');
     }
   }, [searchParams]);
 
-  // Extract unique category names for the dropdown
+  // Extract unique category names for the dropdown from official categories list
   const categoryNames = useMemo(() => {
-    return Array.from(new Set(products.map(p => p.category)));
-  }, []);
+    return categories.map(c => c.categoryName);
+  }, [categories]);
 
   // Filtering & Sorting Logic
   const filteredProducts = useMemo(() => {
@@ -84,7 +113,7 @@ export default function ShopPage() {
     }
 
     return result;
-  }, [selectedCategory, selectedSort, searchTerm]);
+  }, [products, selectedCategory, selectedSort, searchTerm]);
 
   const handleReset = () => {
     setSelectedCategory('All');
@@ -94,7 +123,7 @@ export default function ShopPage() {
   };
 
   return (
-    <main className="min-h-screen pt-20">
+    <main className="min-h-screen pt-16">
 
       {/* 1. Shop Header / Banner */}
       <section className="relative h-[400px] md:h-[500px] w-full flex items-center justify-center overflow-hidden bg-neutral-900">
@@ -158,7 +187,7 @@ export default function ShopPage() {
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12"
               >
                 {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product._id || product.id} product={product} />
                 ))}
               </motion.div>
             ) : (

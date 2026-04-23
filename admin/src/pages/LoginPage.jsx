@@ -18,16 +18,32 @@ const LoginPage = () => {
     setIsLoading(true);
     setError('');
 
-    // Simulate API call
-    setTimeout(() => {
-      if (email === 'admin@aria.com' && password === 'admin123') {
-        login({ name: 'Admin', email: 'admin@aria.com' });
-        navigate('/');
-      } else {
-        setError('Invalid email or password. Hint: admin@aria.com / admin123');
-        setIsLoading(false);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
       }
-    }, 1500);
+
+      // Check if user is admin
+      if (data.user.role !== 'admin') {
+        throw new Error('Access denied. Only administrators can access this portal.');
+      }
+
+      login(data.user, data.token);
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+      setIsLoading(false);
+    }
   };
 
   return (

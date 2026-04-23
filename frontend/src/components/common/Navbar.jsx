@@ -7,19 +7,26 @@ import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, Shirt, Sparkles
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/context/StoreContext';
 
-const shopCategories = [
-  { name: 'Dresses', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=800&auto=format&fit=crop', href: '/shop?category=Dresses', label: 'Evening & Party Wear' },
-  { name: 'Tops', image: 'https://images.unsplash.com/photo-1564584217132-2271feaeb3c5?q=80&w=800&auto=format&fit=crop', href: '/shop?category=Tops', label: 'Everyday Essentials' },
-  { name: 'Ethnic Wear', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop', href: '/shop?category=Ethnic+Wear', label: 'Traditional Elegance' },
-  { name: 'Winter Wear', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop', href: '/shop?category=Winter+Wear', label: 'Warm & Stylish' },
-  { name: 'Accessories', image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?q=80&w=800&auto=format&fit=crop', href: '/shop?category=Accessories', label: 'The Final Touch' },
-  { name: 'Footwear', image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=800&auto=format&fit=crop', href: '/shop?category=Footwear', label: 'Step in Style' },
-];
-
 const Navbar = () => {
   const router = useRouter();
   const { cart, isLoggedIn, logout } = useStore();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [shopCategories, setShopCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category/all`);
+        if (response.ok) {
+          const result = await response.json();
+          setShopCategories(result.categories || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch navbar categories:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -62,7 +69,7 @@ const Navbar = () => {
     // { name: 'Lookbook', href: '/lookbook' },
     { name: 'Blog', href: '/blog' },
     { name: 'Contact', href: '/contact' },
-    { name: 'Test', href: '/test' },
+    // { name: 'Test', href: '/test' },
   ];
 
   return (
@@ -140,21 +147,21 @@ const Navbar = () => {
                           {shopCategories.map((cat, idx) => {
                             return (
                               <Link
-                                key={cat.name}
-                                href={cat.href}
+                                key={cat._id}
+                                href={`/shop?category=${encodeURIComponent(cat.categoryName)}`}
                                 className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl hover:bg-neutral-50 transition-all duration-200 group/item"
                                 onClick={() => setIsShopDropdownOpen(false)}
                               >
                                 <div className="w-12 h-12 rounded-xl bg-neutral-100 overflow-hidden shrink-0 relative">
                                   <Image
                                     src={cat.image}
-                                    alt={cat.name}
+                                    alt={cat.categoryName}
                                     fill
                                     className="object-cover transition-transform duration-500 group-hover/item:scale-110"
                                   />
                                 </div>
                                 <div>
-                                  <p className="text-sm font-semibold text-neutral-800 group-hover/item:text-neutral-900 leading-tight">{cat.name}</p>
+                                  <p className="text-sm font-semibold text-neutral-800 group-hover/item:text-neutral-900 leading-tight">{cat.categoryName}</p>
                                   <p className="text-[11px] text-neutral-400 mt-0.5 leading-tight">{cat.label}</p>
                                 </div>
                               </Link>
@@ -283,21 +290,21 @@ const Navbar = () => {
                                 {shopCategories.map((cat) => {
                                   return (
                                     <Link
-                                      key={cat.name}
-                                      href={cat.href}
+                                      key={cat._id}
+                                      href={`/shop?category=${encodeURIComponent(cat.categoryName)}`}
                                       onClick={() => setIsMobileMenuOpen(false)}
                                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-neutral-50 transition-colors"
                                     >
                                       <div className="w-9 h-9 rounded-lg bg-neutral-100 overflow-hidden shrink-0 relative">
                                         <Image
                                           src={cat.image}
-                                          alt={cat.name}
+                                          alt={cat.categoryName}
                                           fill
                                           className="object-cover"
                                         />
                                       </div>
                                       <div>
-                                        <p className="text-sm font-semibold text-neutral-800">{cat.name}</p>
+                                        <p className="text-sm font-semibold text-neutral-800">{cat.categoryName}</p>
                                         <p className="text-[11px] text-neutral-400">{cat.label}</p>
                                       </div>
                                     </Link>

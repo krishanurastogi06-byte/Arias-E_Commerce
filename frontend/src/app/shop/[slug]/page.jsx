@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, use } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,18 +8,56 @@ import {
   ShoppingBag, Heart, Star, ChevronRight, RotateCcw,
   Shield, Truck, RefreshCcw, Sparkles
 } from 'lucide-react';
-import { products } from '@/data/data';
 import ProductCard from '@/components/ProductCard';
 import { useStore } from '@/context/StoreContext';
 
 export default function ProductDetailPage({ params }) {
   const { addToCart } = useStore();
   const { slug } = use(params);
-  const product = products.find((p) => p.slug === slug);
+
+  const [product, setProduct] = useState(null);
+  const [products, setProducts] = useState([]); // For related products
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch current product
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/products/${slug}`);
+        if (!res.ok) {
+          setProduct(null);
+          return;
+        }
+        const data = await res.json();
+        setProduct(data.product);
+
+        // Fetch all products for related section
+        const allRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/products`);
+        if (allRes.ok) {
+          const allData = await allRes.json();
+          setProducts(allData.products || []);
+        }
+      } catch (err) {
+        console.error('Fetch detail error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (slug) fetchProduct();
+  }, [slug]);
+
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+    </div>
+  );
+
   if (!product) return notFound();
 
   const related = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
+    .filter((p) => p.category === product.category && p._id !== product._id)
     .slice(0, 4);
 
   return (
@@ -27,7 +65,7 @@ export default function ProductDetailPage({ params }) {
       <div className="container mx-auto px-4 md:px-8">
 
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-neutral-400 uppercase tracking-widest mb-10">
+        <nav className="hidden md:flex items-center gap-2 text-xs text-neutral-400 uppercase tracking-widest mb-10">
           <Link href="/" className="hover:text-neutral-700 transition-colors">Home</Link>
           <ChevronRight size={12} />
           <Link href="/shop" className="hover:text-neutral-700 transition-colors">Shop</Link>

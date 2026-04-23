@@ -19,7 +19,7 @@ const TableView = ({ headers, data, onEdit, onDelete, onView, renderCell }) => {
         </thead>
         <tbody className="divide-y divide-neutral-50">
           {data.map((item) => (
-            <tr key={item.id} className="hover:bg-neutral-50/30 transition-colors group">
+            <tr key={item._id || item.id} className="hover:bg-neutral-50/30 transition-colors group">
               {headers.map((header, idx) => (
                 <td key={idx} className="px-6 py-4 text-sm text-neutral-600 font-medium">
                   {renderCell ? renderCell(item, header.key) : item[header.key]}

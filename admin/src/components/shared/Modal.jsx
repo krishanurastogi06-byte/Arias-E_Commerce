@@ -19,24 +19,24 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 sm:p-6 transition-all duration-500">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-500"
         onClick={onClose}
       />
-      
+
       {/* Modal Content */}
       <div className="relative w-full max-w-2xl bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         {/* Header */}
         <div className="px-8 py-6 border-b border-neutral-100 flex items-center justify-between bg-white">
           <h2 className="text-2xl font-serif font-bold text-foreground">{title}</h2>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 rounded-xl text-neutral-400 hover:bg-neutral-50 hover:text-black transition-all"
           >
             <X size={20} />
           </button>
         </div>
-        
+
         {/* Body */}
         <div className="px-8 py-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {children}

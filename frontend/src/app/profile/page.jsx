@@ -159,8 +159,8 @@ const ProfilePage = () => {
                      <div className="w-24 h-24 rounded-full bg-accent-beige flex items-center justify-center text-accent-rose mb-4 border-4 border-[#faf9f6]">
                         <User size={48} />
                      </div>
-                     <h2 className="text-2xl font-serif font-bold italic">{user.name}</h2>
-                     <p className="text-neutral-400 text-sm mt-1 mb-6 italic">Member since {user.joined}</p>
+                     <h2 className="text-2xl font-serif font-bold italic mb-6">{user.fullname}</h2>
+                     {/* <p className="text-neutral-400 text-sm mt-1 mb-6 italic">{user.phoneNumber}</p> */}
 
                      <div className="w-full space-y-2">
                         {[
