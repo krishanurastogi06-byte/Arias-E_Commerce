@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import HeroBanner from '@/components/home/HeroBanner';
 import Image from 'next/image';
@@ -9,7 +9,7 @@ import EmptyState from '@/components/EmptyState';
 import CTASection from '@/components/home/CTASection';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function ShopPage() {
+function ShopContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -202,5 +202,17 @@ export default function ShopPage() {
       <CTASection />
 
     </main>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen pt-32 text-center">
+        <div className="animate-pulse text-neutral-400 font-medium">Loading Shop...</div>
+      </div>
+    }>
+      <ShopContent />
+    </Suspense>
   );
 }
