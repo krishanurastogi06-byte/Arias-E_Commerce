@@ -118,13 +118,11 @@ const Categories = () => {
   const handleDelete = async (item) => {
     if (window.confirm(`Are you sure you want to delete "${item.categoryName}"?`)) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/category/delete`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/category/delete/${item._id}`, {
           method: 'DELETE',
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ id: item._id })
+          }
         });
 
         if (!response.ok) {

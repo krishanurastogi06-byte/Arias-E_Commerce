@@ -51,7 +51,7 @@ exports.getAllCategory = async (req, res) => {
 
 exports.deleteCategory = async (req, res) => {
     try {
-        const { id } = req.body;
+        const { id } = req.params;
         if (!id) return res.status(400).json({ message: "Category ID is required" });
 
         const existingCategory = await categoryModel.findById(id);

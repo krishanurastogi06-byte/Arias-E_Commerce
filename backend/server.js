@@ -9,8 +9,24 @@ const userRouter = require('./src/routes/userRoutes');
 const productRouter = require('./src/routes/productRoutes');
 const categoryRouter = require('./src/routes/categoryRoutes');
 
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.ADMIN_URL,
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5174'
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-    origin: [process.env.FRONTEND_URL, process.env.ADMIN_URL],
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://localhost')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 app.use(express.json());
