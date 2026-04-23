@@ -260,17 +260,17 @@ const ProfilePage = () => {
                               </div>
                               <div className="space-y-2">
                                  <label className="text-[10px] uppercase font-bold tracking-widest text-neutral-400 ml-1">Email Address</label>
-                                 <div className="flex items-center gap-4 p-5 bg-[#faf9f6] rounded-2xl border border-neutral-50 focus-within:border-neutral-800 transition-all">
-                                    <Mail size={18} className="text-accent-rose" />
+                                 <div className="flex items-center gap-3 md:gap-4 p-4 md:p-5 bg-[#faf9f6] rounded-2xl border border-neutral-50 focus-within:border-neutral-800 transition-all overflow-hidden">
+                                    <Mail size={18} className="text-accent-rose shrink-0" />
                                     {isEditing ? (
                                        <input
                                           name="email"
                                           value={tempUser.email}
                                           onChange={handleInputChange}
-                                          className="bg-transparent border-none outline-none w-full text-neutral-800 font-medium"
+                                          className="bg-transparent border-none outline-none w-full text-neutral-800 font-medium text-sm md:text-base"
                                        />
                                     ) : (
-                                       <span className="text-neutral-800 font-medium">{user.email}</span>
+                                       <span className="text-neutral-800 font-medium text-sm md:text-base">{user.email}</span>
                                     )}
                                  </div>
                               </div>
