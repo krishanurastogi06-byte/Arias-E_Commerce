@@ -78,8 +78,7 @@ exports.registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const otp = generateOTP();
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
         const createdUser = await userModel.create({
             fullname,
             email,
